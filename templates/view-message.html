@@ -2,10 +2,11 @@
 	<div class="col-md-12 msg-display">
 		<div class="col-md-12">
 			<div class="row mail-subject">
-				<h4>{{message.subject}}</h4>
+				<h4>Subject: {{message.subject}}</h4>
 			</div>
 			<div class="row sender-n-date">
 				<h5>From: {{message.sender.first_name}} {{message.sender.last_name}}</h5>
+				<h5>To: {{message.receiver.first_name}} {{message.receiver.last_name}}</h5>
 				<h5><small>Date: {{message.created.strftime("%d %b %Y  %H:%M")}} {{message.created.strftime("%p")|lower}}</small></h5>
 			</div>
 			<hr>

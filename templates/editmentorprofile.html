@@ -135,6 +135,19 @@
 				.modal #expertise span ul li {
 					width: 30%;
 				}
+				.navbar-inverse .navbar-inner {
+				    background-image: none;
+				    background-color: #222;
+				}
+				.navbar .brand {
+					display: block;
+					float: left;
+					padding: 15px 20px 10px;
+					margin-left: -20px;
+					font-size: 18px;
+					font-weight: 200;
+					color: #777;
+				}
 		</style>
 	</head>
 
@@ -149,6 +162,7 @@
 			            <span class="icon-bar"></span>
 			            <span class="icon-bar"></span>
 			          </button>
+				      <a href="/" class="brand">MEST Mentor Platform</a>				          
 			          <div class="nav-collapse collapse pull-right">
 			            <ul class="nav">
 			              <li class="active">
@@ -191,7 +205,7 @@
 													<span id="profile-company-position">
 														<p>
 															{% if mentor.positions.count() > 0 %}
-																{% for position in mentor.positions.filter('is_current =', 'True') %}
+																{% for position in mentor.positions.filter('is_current =', True) %}
 																{{position.title}} at {{position.company}}
 																{% endfor %}
 															{% else %}
@@ -278,10 +292,10 @@
 			    						<div class="row-fluid"  id="profile-summary-content">
 				    						<span>
 					    						<p>
-					    							{% if mentor.summary != null%}
+					    							{% if mentor.summary != None %}
 					    							{{mentor.summary}}
 					    							{% else %}
-													{{mentor.program[0].mini_bio}}
+													{{mentor.programs[0].mini_bio}}
 													{% endif %}
 					    						</p>
 				    						</span>
@@ -291,12 +305,12 @@
 			    					<div class="row-fluid" id="profile-resume">
 			    						<div class="profile-resume-label"><span><h5>EXPERIENCE</h5></span></div>
 			    						<div class="row-fluid" id="profile-resume-list">
-			    							{% for position in positions.order('-end_date') %}
+			    							{% for position in mentor.positions.order('end_date') %}
 		    								<div class="row-fluid" id="profile-resume-item">
 		    									<div class="row-fluid" id="resume-position-details">
-			    									<p id="position-title">{{position.title}}</p>
-			    									<p id="position-company">{{position.company}}</p>
-													{% if position.is_current == "True" %}
+			    									<p id="position-title"><b>Position: </b>{{position.title}}</p>
+			    									<p id="position-company"><b>Company: </b>{{position.company}}</p>
+													{% if position.is_current == True %}
 													<p id="position-duration-description">
 														<span id="position-duration">{{position.start_date}} - Present</span>
 													</p>

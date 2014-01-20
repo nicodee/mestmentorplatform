@@ -60,6 +60,17 @@ indexes:
   - name: created
     direction: desc
 
+- kind: Position
+  properties:
+  - name: user
+  - name: end_date
+
+- kind: Position
+  properties:
+  - name: user
+  - name: end_date
+    direction: desc
+
 - kind: Sector
   properties:
   - name: program

@@ -316,3 +316,18 @@ input[readonly]{
   padding-bottom: 15px;
   padding-top: 15px;
 }
+
+.navbar-inverse .navbar-inner {
+  background-image: none;
+  background-color: #222;
+}
+
+.navbar .brand {
+  display: block;
+  float: left;
+  padding: 15px 20px 10px;
+  margin-left: -20px;
+  font-size: 18px;
+  font-weight: 200;
+  color: #777;
+}

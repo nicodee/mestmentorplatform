@@ -161,7 +161,8 @@ class ProgramsHandler(RequestHandler):
        
 class HomePageHandler(RequestHandler):
     def get(self):
-        self.render('index.html')
+        # self.render('index.html')
+        self.redirect("http://www.meltwater.org/mentorplatform")
 
     def post(self):
         #determining which action to perform

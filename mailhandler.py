@@ -139,49 +139,6 @@ def sendRequestMail(from_email, from_name, to_email, to_name, subject, html, tag
         return 'A mandrill error occurred: %s - %s' % (e.__class__, e)
 
 
-def sendReply(user, msg_id, msg, msg_raw, subject, recipient_name, notify):
-    message                       = Message.get_by_id(int(msg_id))
-    new_message                   = {}
-    new_message['sender']         = user
-    new_message['subject']        = subject
-    new_message['sender_name']    = user.first_name + " " + user.last_name
-    new_message['sender_email']   = user.alias
-    new_message['receiver']       = message.sender
-    new_message['receiver_name']  = recipient_name
-    new_message['receiver_email'] = message.sender.email
-    new_message['content']        = msg_raw
-    new_message['type']           = 'reply_to'
-    new_message['category']       = message.sender.user_profile
-    new_message['date']           = strftime("%a, %d %b %Y %X +0000", gmtime())
-    result                        = outBoundMail(new_message)
-    msg                           = Message.create(new_message)
-    new_notify                    = sendCopy(new_message, notify)
-    user.notify_mail              = notify
-    user.put()
-    print new_notify
-    print result
-    return msg
-
-
-def sendCopy(new_message, notify):
-    from_email = new_message.get("sender_email")
-    from_name  = new_message.get("sender_name")
-    to_email   = notify
-    to_name    = new_message.get("sender_name")
-    subject    = "Notification"
-    html       = mailContent.notification_sent
-    reply_to   = "<no-reply>@mestmentorplatform.appspotmail.com"
-    tags       = "Outbound Mail"
-    
-    confirmation_url = access.message_url
-    variables  = [  {'name': 'username', 'content': new_message.get("sender_name")},
-                    {'name': 'receiver_name', 'content': new_message.get("receiver_name")}, 
-                    {'name': 'role', 'content'    : new_message.get("receiver").user_profile },
-                    {'name':'read_url', 'content': confirmation_url}]
-    merge      = False
-    return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
-
-
 def composeNewMail(message):
     user = message.get('sender')  
     notify = message.get('notification_email')
@@ -201,7 +158,8 @@ def composeNewMail(message):
             return False
     else:
         return False
-         
+ 
+
 def notifyEntrepreneur(message):
     user       = message.get("receiver")
     from_email = message.get("sender_email")
@@ -272,4 +230,49 @@ def notificationMail(user):
     tags = "Confirmed User"
     merge = False
     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
+
+
+# def sendReply(user, msg_id, msg, msg_raw, subject, recipient_name, notify):
+#     message                       = Message.get_by_id(int(msg_id))
+#     new_message                   = {}
+#     new_message['sender']         = user
+#     new_message['subject']        = subject
+#     new_message['sender_name']    = user.first_name + " " + user.last_name
+#     new_message['sender_email']   = user.alias
+#     new_message['receiver']       = message.sender
+#     new_message['receiver_name']  = recipient_name
+#     new_message['receiver_email'] = message.sender.email
+#     new_message['content']        = msg_raw
+#     new_message['type']           = 'reply_to'
+#     new_message['category']       = message.sender.user_profile
+#     new_message['date']           = strftime("%a, %d %b %Y %X +0000", gmtime())
+#     result                        = outBoundMail(new_message)
+#     msg                           = Message.create(new_message)
+#     new_notify                    = sendCopy(new_message, notify)
+#     user.notify_mail              = notify
+#     user.put()
+#     print new_notify
+#     print result
+#     return msg
+
+
+# def sendCopy(new_message, notify):
+#     from_email = new_message.get("sender_email")
+#     from_name  = new_message.get("sender_name")
+#     to_email   = notify
+#     to_name    = new_message.get("sender_name")
+#     subject    = "Notification"
+#     html       = mailContent.notification_sent
+#     reply_to   = "<no-reply>@mestmentorplatform.appspotmail.com"
+#     tags       = "Outbound Mail"
+    
+#     confirmation_url = access.message_url
+#     variables  = [  {'name': 'username', 'content': new_message.get("sender_name")},
+#                     {'name': 'receiver_name', 'content': new_message.get("receiver_name")}, 
+#                     {'name': 'role', 'content'    : new_message.get("receiver").user_profile },
+#                     {'name':'read_url', 'content': confirmation_url}]
+#     merge      = False
+#     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
+
+
 

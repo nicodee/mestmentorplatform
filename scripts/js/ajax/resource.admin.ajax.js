@@ -52,5 +52,3 @@ function getExpertise(resource) {
 	criteria = resource.getAttribute("data-expertise");
 	return {"criteria": criteria, "value": value}
 }
-
-console.log("hello");
