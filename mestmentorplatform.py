@@ -161,8 +161,8 @@ class ProgramsHandler(RequestHandler):
        
 class HomePageHandler(RequestHandler):
     def get(self):
-        # self.render('index.html')
-        self.redirect("http://www.meltwater.org/mentorplatform")
+        self.render('index.html')
+        # self.redirect("http://www.meltwater.org/mentorplatform")
 
     def post(self):
         #determining which action to perform
@@ -387,6 +387,7 @@ class MentorPageHandler(RequestHandler):
                 contribution = json.loads(self.request.get('contribution'))
                 contribution['program'] = user.programs[0]
                 result = Contribution.add_contribution(contribution)
+                send_mails = mailhandler.sendContributionMails(contribution,user)
                 return self.render('new_contribution.html', mentor = user)
                 # self.response.write(result)
 

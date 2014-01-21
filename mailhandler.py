@@ -72,7 +72,7 @@ def getAdminDetails():
 
     # recipient['name']  = "Anirudh Narla" 
     # recipient['email'] = "anirudh@meltwater.org"
-    recipient['alias'] = "<no-reply>@mestmentorplatform.appspotmail.com"
+    recipient['alias'] = "admin@mestmentorplatform.appspotmail.com"
 
     return recipient
 
@@ -83,7 +83,7 @@ def requestMail(user):
     new_user_role    = user_role.get(user.user_profile)
 
     from_email       = "admin@mestmentorplatform.appspotmail.com" 
-    from_name        = "Signup Administration"
+    from_name        = "MEST Mentor Platform"
 
     recipient        = getAdminDetails();
 
@@ -166,12 +166,12 @@ def notifyEntrepreneur(message):
     from_name  = message.get("sender_name")
     to_email   = user.notify_mail
     to_name    = message.get("sender_name")
-    subject    = "Notification"
-    try:
-        html   = mailContent.notification_received
-    except:
-        html   = "You just received a mail"
-    reply_to   = "<no-reply>@mestmentorplatform.appspotmail.com"
+    subject    = "You just received a mail on the MEST Mentor Platform."
+    html       = mailContent.notification_received
+    # try:
+    # except:
+    #     html   = "You just received a mail"
+    reply_to   = "admin@mestmentorplatform.appspotmail.com"
     tags       = "Outbound Mail"
 
     confirmation_url = access.message_url
@@ -184,7 +184,7 @@ def notifyEntrepreneur(message):
 
 
 def confirmUserMail(user):
-    from_email = "no-reply@mestmentorplatform.appspotmail.com"
+    from_email = "admin@mestmentorplatform.appspotmail.com"
     from_name  = "MEST Mentor Platform"
     to_email = user.notify_mail
     to_name  = user.first_name + " " + user.last_name
@@ -206,14 +206,14 @@ def confirmUserMail(user):
                     {'name': 'confirmation_url', 'content': confirmation_url}]
 
 
-    reply_to = "<no-reply>@mestmentorplatform.appspotmail.com"
+    reply_to = "admin@mestmentorplatform.appspotmail.com"
     tags = "Confirmed User"
     merge = False
     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
 
 
 def notificationMail(user):
-    from_email = "no-reply@mestmentorplatform.appspotmail.com"
+    from_email = "admin@mestmentorplatform.appspotmail.com"
     from_name  = "MEST Mentor Platform"
     to_email = user.notify_mail
     to_name  = user.first_name + " " + user.last_name
@@ -226,7 +226,7 @@ def notificationMail(user):
     html = mailContent.signup_template
     variables = [{ 'name': 'username', 'content': to_name},
                 {'name': 'userprofile', 'content': user_profile}]
-    reply_to = "<no-reply>@mestmentorplatform.appspotmail.com"
+    reply_to = "admin@mestmentorplatform.appspotmail.com"
     tags = "Confirmed User"
     merge = False
     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
@@ -274,5 +274,58 @@ def notificationMail(user):
 #     merge      = False
 #     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
 
+def sendContributionMails(contribution, mentor):
+    # print contribution.get("company","")
+    # print contribution.get("description","")
+    # print contribution.get("hours","")
+    # print mentor.first_name
+    result = sendContributionMailAdmin(contribution, mentor)
+    print "============================"
+    print result
+    print "============================"
 
+
+# def sendAdminContributionMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge):
+#     to_email = 
+#     pass
+
+# subject = "We've Received Your %s Application" %(user.user_profile)      
+def sendContributionMailAdmin(contribution, mentor):
+    admin       = User.all().filter("user_profile =", "Administrator").get()
+    from_email  = "admin@mestmentorplatform.appspotmail.com"
+    from_name   = "MEST Mentor Platform"
+    to_email    = "admin@mestmentorplatform.appspotmail.com"
+    to_name     = admin.first_name + " " + admin.last_name    
+    mentor_name = mentor.first_name + " " + mentor.last_name
+    subject     = "%s has submitted hours for assisting %s" %(mentor_name, contribution.get("company","")) 
+    html        = mailContent.newhour
+    variables   = [
+                    {'name':'contributors_full_name', 'content': mentor_name},
+                    {'name':'contributed_hours', 'content': contribution.get("hours","")},
+                    {'name':'company_name', 'content': contribution.get("company","")},
+                    {'name':'contributors_first_name', 'content': mentor.first_name},
+                    {'name':'description', 'content': contribution.get("description","")}
+                ]
+    reply_to    = "admin@mestmentorplatform.appspotmail.com"
+    tags        = "New hour contributed"
+    merge       = False
+    try:
+        first =  sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge) 
+        second =  sendOutboundMail(from_email, from_name, admin.email, to_name, subject, html, tags, reply_to, variables, merge)
+        sendContributionMailCEO(from_email, from_name, subject, html, tags, reply_to, variables, merge, contribution)
+        return True
+    except:
+        return False
+
+
+def sendContributionMailCEO(from_email, from_name, subject, html, tags, reply_to, variables, merge, contribution):
+    # ceo = getContributionCEO(contribution)
+    try:
+        # to_email = ceo.get("nnutsukpui@gmail.com")
+        # to_name  = ceo.get("Nicodemus Nutsukpui")
+        to_email = "nnutsukpui@gmail.com"
+        to_name  = "Nicodemus Nutsukpui"
+        return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
+    except:
+        return False
 
