@@ -369,6 +369,14 @@ class MentorPageHandler(RequestHandler):
         else:
             self.redirect('/home') 
     def post(self):
+        def totalContributions(user):
+            total = 0
+            contributions = Contribution.all().filter("user = ", user)
+            for contribution in contributions:
+                total +=contribution.contributed_hours
+
+            return total
+
         if self.user and self.user_profile == "Mentor":
             user = User.get_by_id(int(self.user_id))
             action   = self.request.get("action")
@@ -385,12 +393,13 @@ class MentorPageHandler(RequestHandler):
 
             elif action == "add_contribution":
                 contribution = json.loads(self.request.get('contribution'))
-                contribution['program'] = user.programs[0]
+                contribution['user'] = user
+                contribution['old_total'] = totalContributions(user)
+                contribution['new_total'] = totalContributions(user) + int(contribution.get("hours"))
                 result = Contribution.add_contribution(contribution)
-                send_mails = mailhandler.sendContributionMails(contribution,user)
+                send_mails = mailhandler.sendContributionMails(contribution, user)
                 return self.render('new_contribution.html', mentor = user)
                 # self.response.write(result)
-
 
 class ResourceHandler(RequestHandler):
     def getResources(self):

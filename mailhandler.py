@@ -1,4 +1,4 @@
-from models import User, Message
+from models import User, Message, Contribution, Program
 from time import gmtime, strftime
 import mandrill
 import exceptions
@@ -152,7 +152,7 @@ def composeNewMail(message):
             msg = Message.create(message)
             user.notify_mail = notify
             user.put()
-            print user.notify_mail
+            # print user.notify_mail
             return result
         except:
             return False
@@ -168,9 +168,7 @@ def notifyEntrepreneur(message):
     to_name    = message.get("sender_name")
     subject    = "You just received a mail on the MEST Mentor Platform."
     html       = mailContent.notification_received
-    # try:
-    # except:
-    #     html   = "You just received a mail"
+
     reply_to   = "admin@mestmentorplatform.appspotmail.com"
     tags       = "Outbound Mail"
 
@@ -232,64 +230,10 @@ def notificationMail(user):
     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
 
 
-# def sendReply(user, msg_id, msg, msg_raw, subject, recipient_name, notify):
-#     message                       = Message.get_by_id(int(msg_id))
-#     new_message                   = {}
-#     new_message['sender']         = user
-#     new_message['subject']        = subject
-#     new_message['sender_name']    = user.first_name + " " + user.last_name
-#     new_message['sender_email']   = user.alias
-#     new_message['receiver']       = message.sender
-#     new_message['receiver_name']  = recipient_name
-#     new_message['receiver_email'] = message.sender.email
-#     new_message['content']        = msg_raw
-#     new_message['type']           = 'reply_to'
-#     new_message['category']       = message.sender.user_profile
-#     new_message['date']           = strftime("%a, %d %b %Y %X +0000", gmtime())
-#     result                        = outBoundMail(new_message)
-#     msg                           = Message.create(new_message)
-#     new_notify                    = sendCopy(new_message, notify)
-#     user.notify_mail              = notify
-#     user.put()
-#     print new_notify
-#     print result
-#     return msg
-
-
-# def sendCopy(new_message, notify):
-#     from_email = new_message.get("sender_email")
-#     from_name  = new_message.get("sender_name")
-#     to_email   = notify
-#     to_name    = new_message.get("sender_name")
-#     subject    = "Notification"
-#     html       = mailContent.notification_sent
-#     reply_to   = "<no-reply>@mestmentorplatform.appspotmail.com"
-#     tags       = "Outbound Mail"
-    
-#     confirmation_url = access.message_url
-#     variables  = [  {'name': 'username', 'content': new_message.get("sender_name")},
-#                     {'name': 'receiver_name', 'content': new_message.get("receiver_name")}, 
-#                     {'name': 'role', 'content'    : new_message.get("receiver").user_profile },
-#                     {'name':'read_url', 'content': confirmation_url}]
-#     merge      = False
-#     return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
-
 def sendContributionMails(contribution, mentor):
-    # print contribution.get("company","")
-    # print contribution.get("description","")
-    # print contribution.get("hours","")
-    # print mentor.first_name
     result = sendContributionMailAdmin(contribution, mentor)
-    print "============================"
-    print result
-    print "============================"
 
 
-# def sendAdminContributionMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge):
-#     to_email = 
-#     pass
-
-# subject = "We've Received Your %s Application" %(user.user_profile)      
 def sendContributionMailAdmin(contribution, mentor):
     admin       = User.all().filter("user_profile =", "Administrator").get()
     from_email  = "admin@mestmentorplatform.appspotmail.com"
@@ -309,23 +253,90 @@ def sendContributionMailAdmin(contribution, mentor):
     reply_to    = "admin@mestmentorplatform.appspotmail.com"
     tags        = "New hour contributed"
     merge       = False
+    ceo         = getContributionCEO(contribution)
     try:
-        first =  sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge) 
+        # first  =  sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge) 
         second =  sendOutboundMail(from_email, from_name, admin.email, to_name, subject, html, tags, reply_to, variables, merge)
-        sendContributionMailCEO(from_email, from_name, subject, html, tags, reply_to, variables, merge, contribution)
+        third  =  sendOutboundMail(from_email, from_name, ceo.get("to_email"), ceo.get("to_name"), subject, html, tags, reply_to, variables, merge)
+        fourth =  sendBadgeMail(from_email, from_name, contribution, mentor, admin, reply_to, merge, to_name)
         return True
     except:
         return False
 
 
-def sendContributionMailCEO(from_email, from_name, subject, html, tags, reply_to, variables, merge, contribution):
-    # ceo = getContributionCEO(contribution)
-    try:
-        # to_email = ceo.get("nnutsukpui@gmail.com")
-        # to_name  = ceo.get("Nicodemus Nutsukpui")
-        to_email = "nnutsukpui@gmail.com"
-        to_name  = "Nicodemus Nutsukpui"
-        return sendOutboundMail(from_email, from_name, to_email, to_name, subject, html, tags, reply_to, variables, merge)
-    except:
-        return False
+def getContributionCEO(contribution):
+    ceo = {}
+    ceo['to_email'] = "nnutsukpui@gmail.com"
+    ceo['to_name']  = "Nicodemus Nutsukpui"
+    return ceo
+
+
+def sendBadgeMail(from_email, from_name, contribution, mentor, admin, reply_to, merge, to_name):
+    sendmail = False
+    contributed_hours = contribution.get("new_total")
+
+    badge_category = ""
+    badge_name = ""
+
+    contributors_first_name = mentor.first_name
+
+    program = Program.all().filter("user = ", mentor).get()
+
+    to_name_mentor = mentor.first_name + " " + mentor.last_name
+    subject = "%s just earned a new badge!" %(to_name_mentor)
+    tags = "New badge earned"
+
+    if contributed_hours >= 50 and program.guru == None:
+        sendmail = True
+        badge_category = "GURU"
+        badge_name = "Badge50"
+        program.guru = True
+        program.ninja = True
+        program.rock_star = True
+        program.put()
+    
+    elif contributed_hours >= 25 and program.ninja == None:
+        sendmail = True
+        badge_name = "Badge25"
+        badge_category = "NINJA"
+        program.ninja = True
+        program.rock_star = True
+        program.put()
+    
+    elif contributed_hours >= 10 and program.rock_star == None:
+        sendmail = True
+        badge_name = "Badge10"
+        badge_category = "ROCK STAR"
+        program.rock_star = True
+        program.put()
+    
+    to_email_mentor = mentor.email
+    html_mentor = mailContent.newbadge
+    variables_mentor = [
+                    {'name':'contributors_first_name', 'content': contributors_first_name},
+                    {'name':'contributed_hours', 'content': contributed_hours},
+                    {'name':'badge_name', 'content': badge_name},
+                    {'name':'badge_category', 'content': badge_category}
+                ] 
+    
+    to_email_admin = admin.email
+    to_name_admin = to_name
+    html_admin = mailContent.newbadgeadmin
+    variables_admin = [
+                    {'name':'contributors_full_name', 'content': to_name_mentor},
+                    {'name':'badge_category', 'content': badge_category},
+                    {'name':'contributed_hours', 'content': contributed_hours},
+                    {'name':'contributors_first_name', 'content': contributors_first_name}
+                ]
+    if  sendmail:
+        try:
+            mentor_mail  =  sendOutboundMail(from_email, from_name, to_email_mentor, to_name_mentor, subject, html_mentor, tags, reply_to, variables_mentor, merge) 
+            admin_mail   =  sendOutboundMail(from_email, from_name, to_email_admin, to_name_admin, subject, html_admin, tags, reply_to, variables_admin, merge)        
+            return True
+        except:
+            return False
+
+    return True
+            
+
 

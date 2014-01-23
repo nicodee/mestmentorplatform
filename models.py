@@ -215,6 +215,9 @@ class Program(db.Model):
     mini_bio           = db.TextProperty() 
     time_zone          = db.StringProperty()
     hours              = db.IntegerProperty()
+    rock_star          = db.BooleanProperty()
+    ninja              = db.BooleanProperty()
+    guru               = db.BooleanProperty()
     created            = db.DateTimeProperty(auto_now_add=True)
 
     @classmethod
@@ -253,16 +256,18 @@ class Program(db.Model):
             db.delete(result)
 
 class Contribution(db.Model):    
-    program     = db.ReferenceProperty(Program, collection_name='contributions')
-    company     = db.StringProperty()
-    contributed_hours   = db.IntegerProperty()
-    description  = db.TextProperty()
+    user = db.ReferenceProperty(User, collection_name='contributions')
+    program = db.ReferenceProperty(Program, collection_name='contributions')
+    company = db.StringProperty()
+    contributed_hours = db.IntegerProperty()
+    description = db.TextProperty()
     created = db.DateTimeProperty(auto_now_add=True)
 
     @classmethod
     def add_contribution(cls, contribution):
-        result = cls.gql("WHERE program=:1 and company=:2 and contributed_hours=:3 and description=:4",
-                            contribution.get("program", ""), 
+        mentor =  contribution.get("user")
+        result = cls.gql("WHERE user=:1 and company=:2 and contributed_hours=:3 and description=:4",
+                            contribution.get("user", ""), 
                             contribution.get("company", ""),
                             contribution.get("hours", ""),
                             contribution.get("description", "")
@@ -270,8 +275,9 @@ class Contribution(db.Model):
 
         if result.count() == 0:
             new_contribution = Contribution(
-                program = contribution.get("program"),
+                user = contribution.get("user"),
                 company = contribution.get("company"),
+                program = mentor.programs[0],
                 contributed_hours = int(contribution.get("hours")),
                 description = contribution.get("description")
                 )

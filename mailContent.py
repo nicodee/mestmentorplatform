@@ -12,3 +12,7 @@ notification_received = confirm_mentor_template.received_notif
 request = confirm_mentor_template.request_template
 
 newhour = confirm_mentor_template.newhour
+
+newbadge = confirm_mentor_template.newbadge
+
+newbadgeadmin = confirm_mentor_template.newbadgeadmin
